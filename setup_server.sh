@@ -74,53 +74,31 @@ start_time="$(date -u +%s)"
 
 
 echo "######### Setting up server #########"
-echo "For Amazon Web Services (AWS) Amazon Machine Image (AMI) Linux Ubuntu Server 22.04 LTS (HVM)"
+echo "For Linux Ubuntu Server 22.04 LTS Web Services"
 
-echo "1. Updating Ubuntu"
+
+echo -e "\n1. Updating Ubuntu"
 # Update package database
 sudo apt-get update -y
 
 # Configure needrestart to automatically restart services
-sudo sed -i 's/^#\$nrconf{restart}.*$/$nrconf{restart} = '\''a'\'';/' /etc/needrestart/needrestart.conf
+# sudo sed -i 's/^#\$nrconf{restart}.*$/$nrconf{restart} = '\''a'\'';/' /etc/needrestart/needrestart.conf
 
 # Upgrade packages
 sudo apt-get upgrade -y
 
-# Install EMACS, Professor Burke's favorite text editor
-sudo apt-get install emacs -y
-sudo apt-get install emacs -y
 
-echo "2. Installing NGINX and docker"
+echo -e "\n2. Installing NGINX and docker"
 echo "Installing NGINX"
 sudo apt-get --yes install nginx
 echo "Configuring nginx.conf"
 #curl http://checkip.amazonaws.com # our public IP address
-sed -i "s/www\.example\.com/$(curl -s http://checkip.amazonaws.com)/g" ~/cloud_station_deployment/nginx.conf
-sudo usermod -a -G ubuntu www-data
+sed -i "s/www\.example\.com/$(hostname -I | awk '{print $2}')/g" ~/cloud_station_deployment/nginx.conf
+sudo usermod -a -G $USER www-data
 
-echo "Removing any old Docker installations"
-sudo apt-get --yes remove docker docker-engine docker.io containerd runc
-
-# use https://stackoverflow.com/questions/71393595/installing-docker-in-ubuntu-from-repo-cant-find-a-repo
-sudo apt-get update
-     
-echo "Installing dependencies for Docker installation"
-sudo apt-get --yes install apt-transport-https ca-certificates curl gnupg lsb-release
-
-echo "Adding Docker's official GPG key"
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-
-echo "Setting up the Docker stable repository"
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-sudo apt-get update
-
-echo "Installing Docker CE, Docker CE CLI, and containerd.io"
-sudo apt --yes install docker.io
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io
-#bash ./docker.sh Legacy from v 3.0. But file docker.sh not here yet, why run it now?
 
 # Temporary clone the dev branch
-echo "3. Cloning CloudStation web app source code"
+echo -e "\n3. Cloning CloudStation web app source code"
 #git clone https://github.com/CloudStationTeam/cloud_station_web.git
 git clone https://github.com/CloudStationTeam/cloud_station_web.git --branch dev --single-branch
 
@@ -142,7 +120,8 @@ git clone https://github.com/CloudStationTeam/cloud_station_web.git --branch dev
 #    esac
 #done
 
-echo "4. Setting up Python virtual environment"
+
+echo -e "\n4. Setting up Python virtual environment"
 sudo apt-get --yes install python3-venv
 mkdir ~/ENV
 python3 -m venv ~/ENV # Creates python virtual environment.
